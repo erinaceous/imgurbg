@@ -78,7 +78,6 @@ while [ "$#" -ge "1" ]; do
                 shift ;;
             --save-to)
                 SAVE_TO="$2"
-                save_root=${SAVE_TO//\/%s/}
                 shift ;;
             *)
                 echo "Unknown argument on command line."
@@ -89,6 +88,7 @@ while [ "$#" -ge "1" ]; do
     fi
     shift
 done
+save_root=${SAVE_TO//\/%s/}
 
 # Check if album IDs have been passed on the command line or in the config
 # file. If they haven't, default to using the IDs of albums previously used
@@ -197,5 +197,6 @@ fi
 # Finally, make it the wallpaper :)
 echo "Picking $image_base"
 if [ "$WALLPAPERER" != "" ]; then
+    echo "${WALLPAPERER//%s/$image_file}"
     ${WALLPAPERER//%s/$image_file}
 fi 
