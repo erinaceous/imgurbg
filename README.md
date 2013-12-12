@@ -59,4 +59,9 @@ PROTIP: set it up to pick a new wallpaper every 15 minutes with this script:
 
 And adding that to your desktop environment's startup programs.
 
+You can blacklist images from showing up (couple of wallpapers too NSFW?) by
+creating a 'blacklist.txt' in the root of your cache directory
+(So by default that's `~/.imgurbg-cache/blacklist.txt`), and adding the URLs of
+the files you DON'T want to download, one per line.
+
 Enjoy all the pretty and enormous imgur albums of 1080p+ wallpapers out there :)

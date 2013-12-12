@@ -24,7 +24,7 @@
 
 # Some defaults
 API_KEY="None, please edit this file or pass via command line argument."
-WALLPAPERER="/usr/bin/feh --bg-fill %s"
+WALLPAPERER="/usr/bin/feh --bg-scale %s"
 SAVE_TO="$HOME/.imgurbg-cache/%s"
 ALBUMS=""  # you could set default album ID(s) here.
 API_URL="https://api.imgur.com/3/gallery/album/%s.json"
@@ -78,6 +78,7 @@ while [ "$#" -ge "1" ]; do
                 shift ;;
             --save-to)
                 SAVE_TO="$2"
+                save_root=${SAVE_TO//\/%s/}
                 shift ;;
             *)
                 echo "Unknown argument on command line."
@@ -93,16 +94,16 @@ done
 # file. If they haven't, default to using the IDs of albums previously used
 # that have been stored in the cache directory -- find all directories within
 # the cache dir whose names don't begin with '.' and treat them as album IDs.
+echo "Cache directory: $save_root"
 if [ "$ALBUMS" = "" ]; then
-    echo "No albums specified on command line (or in the script)."
-    ALBUMS="`find $save_root -type d | xargs -n1 basename | grep -v -P '^\.'`"
+    ALBUMS="`find $save_root -mindepth 1 -type d |\
+             xargs -n1 basename | grep -v -P '^\.'`"
     if [ "$ALBUMS" = "" ]; then
-        echo "No previous albums found in $save_root either. Exiting :("
+        echo "No previous albums found in $save_root - Exiting :("
         exit 1
-    else
-        echo "Using albums: $ALBUMS"
     fi
 fi
+echo "Using albums: $ALBUMS" | tr '\n' ' '; echo
 
 # Check for the curl or wget programs. If neither exist, we can't do any
 # downloading so quit the script.
@@ -169,7 +170,13 @@ done
 
 # Merge all the album.txt's from every album specified (via commandline/config,
 # or found automatically), and pick one URL from the resulting giant list.
-image=`echo -n $album_lists | xargs -d ' ' cat | sort -R | head -n1`
+if [ -f "$save_root/blacklist.txt" ]; then
+    blacklist="$save_root/blacklist.txt"
+else
+    blacklist="/dev/null"
+fi
+image=`echo -n $album_lists | xargs -d ' ' cat | fgrep -iv -f "$blacklist" \
+       | sort -R | head -n1`
 if [ "$image" = "" ]; then
     echo 'No images found in these albums. Exiting :('
     exit 1
