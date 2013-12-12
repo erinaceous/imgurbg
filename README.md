@@ -1,6 +1,8 @@
 imgurbg.sh: Download a random image from multiple imgur albums and make it your
 wallpaper :)
 
+![tiny demonstration gif](http://i.imgur.com/xleGFRx.gif "Tiny demonstration gif")
+
 Requirements:
 =============
 * curl or wget
@@ -28,7 +30,7 @@ Next, if you don't wanna clone this repo, you can just run these commands:
 
     mkdir ~/.imgurbg-cache
     cd .imgurbg-cache
-    
+    wget -O imgurbg.sh https://raw.github.com/doomcat/imgurbg/master/imgurbg.sh 
     ./imgurbg.sh --api_key [Client ID] akHsJ
 
 This will download the script into .imgurbg-cache and run it using the API key
@@ -46,5 +48,15 @@ If you don't want to keep passing the script your Client ID every time, create a
 `~/.imgurbg-cache/config` file which contains
 
     CLIENT_ID='Your Client ID'
+
+PROTIP: set it up to pick a new wallpaper every 15 minutes with this script:
+
+    #!/bin/bash
+    while true; do
+        ~/.imgurbg-cache/imgurbg.sh
+        sleep 15m
+    done
+
+And adding that to your desktop environment's startup programs.
 
 Enjoy all the pretty and enormous imgur albums of 1080p+ wallpapers out there :)
