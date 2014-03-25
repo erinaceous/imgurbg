@@ -24,7 +24,7 @@
 
 # Some defaults
 API_KEY="None, please edit this file or pass via command line argument."
-WALLPAPERER="/usr/bin/feh --bg-scale %s"
+WALLPAPERER="/usr/bin/feh --bg-center %s"
 SAVE_TO="$HOME/.imgurbg-cache/%s"
 ALBUMS=""  # you could set default album ID(s) here.
 API_URL="https://api.imgur.com/3/gallery/album/%s.json"
@@ -63,7 +63,7 @@ exit 1
 
 # Check the command line arguments for instances of -h, -H, --help, etc.
 if [ "`echo $* | grep -i -c -P '\-*(h|help)\b'`" != "0" ]; then
-    usage
+    usage >/dev/stderr
 fi
 
 # Parse the command line arguments.
@@ -80,8 +80,8 @@ while [ "$#" -ge "1" ]; do
                 SAVE_TO="$2"
                 shift ;;
             *)
-                echo "Unknown argument on command line."
-                usage
+                echo "Unknown argument on command line." >/dev/stderr
+                usage >/dev/stderr
         esac
     else
         ALBUMS="$ALBUMS$1 "
@@ -94,16 +94,16 @@ save_root=${SAVE_TO//\/%s/}
 # file. If they haven't, default to using the IDs of albums previously used
 # that have been stored in the cache directory -- find all directories within
 # the cache dir whose names don't begin with '.' and treat them as album IDs.
-echo "Cache directory: $save_root"
+echo "Cache directory: $save_root" >/dev/stderr
 if [ "$ALBUMS" = "" ]; then
     ALBUMS="`find $save_root -mindepth 1 -type d |\
              xargs -n1 basename | grep -v -P '^\.'`"
     if [ "$ALBUMS" = "" ]; then
-        echo "No previous albums found in $save_root - Exiting :("
+        echo "No previous albums found in $save_root - Exiting :(" >/dev/stderr
         exit 1
     fi
 fi
-echo "Using albums: $ALBUMS" | tr '\n' ' '; echo
+echo "Using albums: $ALBUMS" | tr '\n' ' ' > /dev/stderr; echo >/dev/stderr
 
 # Check for the curl or wget programs. If neither exist, we can't do any
 # downloading so quit the script.
@@ -111,7 +111,7 @@ which curl > /dev/null 2>&1
 if [ "$?" != "0" ]; then
     which wget > /dev/null 2>&1
     if [ "$?" != "0" ]; then
-        echo "Couldn't find curl or wget in your PATH. Exiting :("
+        echo "Couldn't find curl or wget in your PATH. Exiting :(" >/dev/stderr
         exit 1
     else
         DOWNLOADER="wget"
@@ -123,7 +123,7 @@ fi
 # Also look for the jshon program.
 which jshon > /dev/null 2>&1
 if [ "$?" != "0" ]; then
-    echo "Couldn't find jshon program in your PATH. Exiting :("
+    echo "Couldn't find jshon program in your PATH. Exiting :(" >/dev/stderr
     exit 1
 fi
 
@@ -131,14 +131,14 @@ fi
 # first. mkdir should fail anyway if the file exists but whatever.
 if [ ! -d "$save_root" ]; then
     if [ ! -e "$save_to" ]; then
-        echo "Creating directory $save_root"
+        echo "Creating directory $save_root" >/dev/stderr
         mkdir -p "$save_root"
         if [ "$?" != "0" ]; then
-            echo "Couldn't create directory $save_root - Exiting :("
+            echo "Couldn't create directory $save_root - Exiting :(" >/dev/stderr
             exit 1
         fi
     else
-        echo "$save_root already exists and is a regular file. Exiting :("
+        echo "$save_root already exists and is a regular file. Exiting :(" >/dev/stderr
         exit 1
     fi
 fi
@@ -153,7 +153,7 @@ for ALBUM in $ALBUMS; do
     save_to=${SAVE_TO//%s/$ALBUM}
     mkdir -p $save_to
     if [ ! -f "$save_to/album.txt" ]; then
-        echo "Fetching album information"
+        echo "Fetching album information" >/dev/stderr
         url="${API_URL//%s/$ALBUM}"
         if [ "$DOWNLOADER" = "wget" ]; then
             wget -q -O "$save_to/album.json" \
@@ -178,7 +178,7 @@ fi
 image=`echo -n $album_lists | xargs -d ' ' cat | fgrep -iv -f "$blacklist" \
        | sort -R | head -n1`
 if [ "$image" = "" ]; then
-    echo 'No images found in these albums. Exiting :('
+    echo 'No images found in these albums. Exiting :(' >/dev/stderr
     exit 1
 fi
 
@@ -186,7 +186,7 @@ fi
 image_base=`basename $image`
 image_file="$save_root/$image_base"
 if [ ! -f "$image_file" ]; then
-    echo "Downloading $image"
+    echo "Downloading $image" >/dev/stderr
     if [ "$DOWNLOADER" = "wget" ]; then
         wget -q -O "$image_file" $image 2>/dev/null
     elif [ "$DOWNLOADER" = "curl" ]; then
@@ -195,8 +195,8 @@ if [ ! -f "$image_file" ]; then
 fi
 
 # Finally, make it the wallpaper :)
-echo "Picking $image_base"
+echo "Picking $image_base" >/dev/stderr
 if [ "$WALLPAPERER" != "" ]; then
-    echo "${WALLPAPERER//%s/$image_file}"
+    echo "${WALLPAPERER//%s/$image_file}" >/dev/stderr
     ${WALLPAPERER//%s/$image_file}
 fi 
